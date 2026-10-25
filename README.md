@@ -88,12 +88,12 @@ Same code, seeds and budgets on every machine. **Accuracy should agree across ha
 | Host class | `intel-vm` | `colab-t4` |
 | Platform / Python | windows / 3.14.7 | colab / 3.13.16 |
 | torch | `2.14.1+cpu` | `2.11.0+cu130` |
-| Total script runtime (cumulative) | 3,557.2 s | 488.4 s |
+| Total script runtime | 3,557.2 s | 492.4 s |
 | Data SHA-256 | `2542d60bc3f5…` | `2542d60bc3f5…` |
 
 ### Local CPU (`cpu`): 5 seeds per arm, reference arm `sinusoidal`
 
-| Arm | Params | Test MAE, kW (mean ± seed SD) | Range | p50 latency, ms/window | Train s (mean) | Peak GPU MB above floor (median over seeds) |
+| Arm | Params | Test MAE, kW (mean ± seed SD) | Range | p50 latency, ms/window | Train s (mean) | Peak GPU MB above floor |
 |---|---:|---:|---:|---:|---:|---:|
 | `none` | 68,824 | 21.385 ± 0.813 | 20.19–22.29 | 0.324 | 171.0 s | n/a |
 | `sinusoidal` | 68,824 | 8.428 ± 0.129 | 8.29–8.57 | 0.316 | 169.6 s | n/a |
@@ -110,9 +110,9 @@ No-learning references: yesterday-naive 12.37 kW, last-week-naive 11.84 kW.
 
 ### Colab T4 GPU (`t4gpu`): 5 seeds per arm, reference arm `sinusoidal`
 
-| Arm | Params | Test MAE, kW (mean ± seed SD) | Range | p50 latency, ms/window | Train s (mean) | Peak GPU MB above floor (median over seeds) |
+| Arm | Params | Test MAE, kW (mean ± seed SD) | Range | p50 latency, ms/window | Train s (mean) | Peak GPU MB above floor |
 |---|---:|---:|---:|---:|---:|---:|
-| `none` | 68,824 | 21.060 ± 0.801 | 20.17–22.26 | 0.067 | 22.3 s | 592.992 |
+| `none` | 68,824 | 21.060 ± 0.801 | 20.17–22.26 | 0.067 | 22.3 s | 527.992 |
 | `sinusoidal` | 68,824 | 8.449 ± 0.132 | 8.23–8.57 | 0.067 | 22.3 s | 528.074 |
 | `learned` | 79,576 | 8.542 ± 0.134 | 8.41–8.73 | 0.067 | 22.3 s | 528.197 |
 | `rope` | 68,824 | 8.473 ± 0.114 | 8.34–8.63 | 0.078 | 26.7 s | 570.014 |
