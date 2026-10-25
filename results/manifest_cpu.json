@@ -17,7 +17,7 @@
   "vm_product": "Virtual Machine",
   "host_label": "Intel VM (CPU only)",
   "cpu_count": 16,
-  "ram_gib": 7.3,
+  "ram_gib": 9.8,
   "driver": null,
   "numpy": "2.5.4",
   "pandas": "3.1.0",
@@ -25,7 +25,7 @@
   "scipy": "1.18.1",
   "yaml": "6.0.3"
  },
- "total_runtime_s": 3554.8950551,
+ "total_runtime_s": 3557.2327143,
  "data_sha256": "2542d60bc3f531a7a6ef4487616fc51681723c60ec259bca0a778508c0ac6cd2",
  "cpu_threads_pinned": 8,
  "quick": false,

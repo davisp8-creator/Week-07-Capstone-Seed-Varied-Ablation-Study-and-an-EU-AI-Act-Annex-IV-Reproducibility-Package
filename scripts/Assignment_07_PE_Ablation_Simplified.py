@@ -343,17 +343,22 @@ def time_forward(model, xb):
     return np.percentile(out, 50), np.percentile(out, 95)
 
 
-set_seed(0)
-lat_models = {a: build_model(a).to(DEVICE).eval() for a in ARMS}
-lat_x = W["test"][0][:CFG["latency"]["batch_size"]].to(DEVICE)
-lat_rows = []
-rng_lat = np.random.default_rng(2024)
-for rnd in range(CFG["latency"]["rounds"]):
-    for arm in rng_lat.permutation(ARMS):
-        p50, p95 = time_forward(lat_models[arm], lat_x)
-        lat_rows.append({"arm": arm, "round": rnd, "p50_ms_window": p50 / len(lat_x), "p95_ms_window": p95 / len(lat_x)})
-LAT = pd.DataFrame(lat_rows)
-LAT.to_csv(RESULTS / f"latency_runs_{TAG}.csv", index=False)
+LAT_CSV = RESULTS / f"latency_runs_{TAG}.csv"
+if LAT_CSV.exists() and not FRESH:  # a resume reuses the saved measurement, like it reuses saved training runs
+    LAT = pd.read_csv(LAT_CSV)
+    print(f"latency: reusing {LAT_CSV.name} (ABLATE_FRESH=1 measures again)")
+else:
+    set_seed(0)
+    lat_models = {a: build_model(a).to(DEVICE).eval() for a in ARMS}
+    lat_x = W["test"][0][:CFG["latency"]["batch_size"]].to(DEVICE)
+    lat_rows = []
+    rng_lat = np.random.default_rng(2024)
+    for rnd in range(CFG["latency"]["rounds"]):
+        for arm in rng_lat.permutation(ARMS):
+            p50, p95 = time_forward(lat_models[arm], lat_x)
+            lat_rows.append({"arm": arm, "round": rnd, "p50_ms_window": p50 / len(lat_x), "p95_ms_window": p95 / len(lat_x)})
+    LAT = pd.DataFrame(lat_rows)
+    LAT.to_csv(LAT_CSV, index=False)
 print(LAT.groupby("arm")[["p50_ms_window", "p95_ms_window"]].mean().reindex(ARMS).round(4))
 
 
@@ -380,7 +385,9 @@ SUMM = pd.DataFrame({
     "mae_mean": g[metric].mean(), "mae_sd": g[metric].std(ddof=1), "mae_ci95_halfwidth": g[metric].apply(ci95),
     "mae_min": g[metric].min(), "mae_max": g[metric].max(), "rmse_mean": g.test_rmse_kw.mean(),
     "train_s_mean": g.train_s.mean(), "p50_ms_window": lat_mean.p50_ms_window, "p95_ms_window": lat_mean.p95_ms_window,
-    "p50_round_sd": lat_spread, "peak_gpu_mb": g.peak_gpu_mb.max(), "rss_delta_mb_mean": g.rss_delta_mb.mean(),
+    "p50_round_sd": lat_spread,
+    # median over seeds: the first CUDA run of a session pays one-time library workspace, so a max would charge it to one arm
+    "peak_gpu_mb": g.peak_gpu_mb.median(), "rss_delta_mb_mean": g.rss_delta_mb.mean(),
 }).reindex(ARMS)
 SUMM.round(4).to_csv(RESULTS / f"summary_{TAG}.csv")
 
@@ -477,13 +484,16 @@ plt.close(fig)
 
 # Step 11: Results JSON, Manifest, and Optional Publish
 total_s = time.perf_counter() - T_START
+MANIFEST = RESULTS / f"manifest_{TAG}.json"
+if MANIFEST.exists() and not FRESH:  # a resumed invocation adds to the runtime already recorded
+    total_s += json.loads(MANIFEST.read_text(encoding="utf-8")).get("total_runtime_s", 0.0)
 arms_json = {a: {k: (None if (isinstance(v, float) and math.isnan(v)) else (v.item() if hasattr(v, "item") else v))
                  for k, v in SUMM.loc[a].items()} for a in ARMS}
 (RESULTS / f"results_{TAG}.json").write_text(json.dumps({
     "tag": TAG, "reference_arm": REF, "seeds": SEEDS, "arms": arms_json,
     "comparison": json.loads(CMP.to_json(orient="records")), "verdicts": VERDICTS, "naive": NAIVE,
     "reference_checks": CHECKS}, indent=1), encoding="utf-8")
-(RESULTS / f"manifest_{TAG}.json").write_text(json.dumps({
+MANIFEST.write_text(json.dumps({
     "hardware": hardware_snapshot(ENV), "total_runtime_s": total_s, "data_sha256": DATA_SHA,
     "cpu_threads_pinned": CFG["threads"], "quick": QUICK, "config": CFG}, indent=1, default=str), encoding="utf-8")
 print(f"wrote results/*_{TAG}.* in {total_s:.0f}s total")

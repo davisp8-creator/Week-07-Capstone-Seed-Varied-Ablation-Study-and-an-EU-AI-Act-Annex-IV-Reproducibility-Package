@@ -70,7 +70,7 @@ def device_label(m):
 
 
 def arm_table(res):
-    head = ["| Arm | Params | Test MAE, kW (mean ± seed SD) | Range | p50 latency, ms/window | Train s (mean) | Peak GPU MB above floor |",
+    head = ["| Arm | Params | Test MAE, kW (mean ± seed SD) | Range | p50 latency, ms/window | Train s (mean) | Peak GPU MB above floor (median over seeds) |",
             "|---|---:|---:|---:|---:|---:|---:|"]
     for arm, c in res["arms"].items():
         head.append(f"| `{arm}` | {int(c['n_params']):,} | {c['mae_mean']:.3f} ± {c['mae_sd']:.3f} | "
@@ -91,7 +91,7 @@ def render_section(root=ROOT):
           "| Host class | " + " | ".join(f"`{runs[t][1]['hardware']['host_class']}`" for t in tags) + " |",
           "| Platform / Python | " + " | ".join(f"{runs[t][1]['hardware']['platform']} / {runs[t][1]['hardware']['python']}" for t in tags) + " |",
           "| torch | " + " | ".join(f"`{runs[t][1]['hardware']['torch']}`" for t in tags) + " |",
-          "| Total script runtime | " + " | ".join(fmt(runs[t][1]["total_runtime_s"], "s") for t in tags) + " |",
+          "| Total script runtime (cumulative) | " + " | ".join(fmt(runs[t][1]["total_runtime_s"], "s") for t in tags) + " |",
           "| Data SHA-256 | " + " | ".join(f"`{runs[t][1]['data_sha256'][:12]}…`" for t in tags) + " |"]
     body = []
     for t in tags:
