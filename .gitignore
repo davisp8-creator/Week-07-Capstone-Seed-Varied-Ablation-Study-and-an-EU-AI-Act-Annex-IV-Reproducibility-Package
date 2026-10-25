@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+*.log
+.ipynb_checkpoints/
+# quick smoke-test outputs are not submission results
+results/*_quick*
+# generated dataset (rebuilt byte-identically from the seed; the SHA-256 is in results/manifest_<tag>.json)
+data/
+# Excel lock files
+~$*
+# video files are submitted through the LMS, not the repo
+*.mp4
+*.mov
+*.webm

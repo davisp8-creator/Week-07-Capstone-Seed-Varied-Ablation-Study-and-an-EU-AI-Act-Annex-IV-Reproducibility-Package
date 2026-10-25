@@ -1,0 +1,13 @@
+# Versions captured from the project .venv (Python 3.14.7, Windows, CPU) that produced results/*_cpu.*.
+# The installers do NOT use this file: env_setup.py detects the imports from the assignment script and
+# installs whatever is missing. It is here as a record of a known-good set.
+#
+# Do not `pip install -r requirements.txt` on Colab: it would replace Colab's CUDA torch build
+# (e.g. "2.x+cu12x") with this +cpu one, and the T4 would become invisible to torch. See COLAB.md.
+numpy==2.5.4
+pandas==3.1.0
+scipy==1.18.1
+matplotlib==3.11.2
+torch==2.14.1
+PyYAML==6.0.3
+psutil==7.2.2
