@@ -50,6 +50,9 @@ def deep_merge(base, over):
     return out
 
 
+if not (ROOT / "configs" / "ablation.yaml").exists():
+    raise FileNotFoundError(f"{ROOT / 'configs' / 'ablation.yaml'} not found. The working directory must be the repo root "
+                            "(on Colab: run the Colab Bootstrap cell first, or see COLAB.md).")
 CFG = yaml.safe_load((ROOT / "configs" / "ablation.yaml").read_text(encoding="utf-8-sig"))
 CFG = deep_merge({k: v for k, v in CFG.items() if k != "quick"}, CFG["quick"]) if QUICK else \
     {k: v for k, v in CFG.items() if k != "quick"}
@@ -69,7 +72,7 @@ def generate_demand(dc):
     n_hours = dc["n_days"] * 24
     t = np.arange(n_hours)
     idx = pd.Timestamp(dc["start"]) + pd.to_timedelta(t, unit="h")
-    hod, dow = idx.hour.values, idx.dayofweek.values
+    hod, dow = idx.hour.values, idx.day_of_week.values
     annual = 12.0 - 11.0 * np.cos(2 * np.pi * (t - 400) / 8760)
     diurnal = 4.0 * np.sin(2 * np.pi * (t % 24 - 9) / 24)
     eps = rng.normal(0, 1.0, n_hours)

@@ -127,13 +127,40 @@ def bootstrap_cells(url):
     return [cell("markdown", md), cell("code", code)]
 
 
+def zip_bootstrap_cells():
+    """Fallback when the repo has no git remote: the user uploads the repo zip next to the notebook.
+    Safe to re-run: skipped once env_setup.py is present in the working directory."""
+    code = [
+        "# Colab bootstrap (no GitHub remote): unpack the uploaded repo zip once and move into it. Safe to re-run.",
+        "import glob, os, zipfile",
+        "",
+        'if not os.path.exists("env_setup.py"):',
+        '    found = [d for d in glob.glob("*/") if os.path.exists(os.path.join(d, "env_setup.py"))]',
+        "    if not found:",
+        '        zips = sorted(glob.glob("Week-07*.zip"))',
+        "        if not zips:",
+        "            raise FileNotFoundError(",
+        '                "Upload the Week-07 repo zip to /content (Files panel, left sidebar), then Run all again.")',
+        '        zipfile.ZipFile(zips[0]).extractall(".")',
+        '        found = [d for d in glob.glob("*/") if os.path.exists(os.path.join(d, "env_setup.py"))]',
+        "    os.chdir(found[0])",
+        'print("working directory:", os.getcwd())',
+    ]
+    md = ["## Colab Bootstrap", "",
+          "A Colab runtime starts with only this notebook. Upload the repo zip to `/content` (Files panel in the left "
+          "sidebar), then run this cell: it unpacks the zip once and changes into the folder, so `scripts/`, `configs/` "
+          "and `results/` exist. Running it again does nothing."]
+    return [cell("markdown", md), cell("code", code)]
+
+
 def build_notebook(header, steps):
     cells = [cell("markdown", header_markdown(header))]
     url = repo_url()
     if url:
         cells += bootstrap_cells(url)
     else:
-        print("[build_notebook] no git remote 'origin': notebook has no Colab bootstrap cell (clone by hand, see COLAB.md)")
+        print("[build_notebook] no git remote 'origin': using the upload-a-zip Colab bootstrap cell (see COLAB.md)")
+        cells += zip_bootstrap_cells()
     for st in steps:
         md = [f"## Step {st['num']}: {st['title']}", ""] + st["desc"]
         if st["refs"]:

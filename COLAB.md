@@ -21,9 +21,12 @@ Without the secret, you get a hidden prompt at the end (the token is not echoed 
 **Runtime → Change runtime type → T4 GPU → Save.** Upload `Assignment_07_PE_Ablation_Colab.ipynb` (File → Upload notebook,
 or open it from GitHub). The notebook's first code cell, **Colab Bootstrap**, clones this repo once and changes into it, so
 there is nothing to type. It is safe to re-run: when `env_setup.py` already exists in the working directory it does nothing,
-so **Run all** never clones twice or nests folders. The Bootstrap cell exists only when the notebook was built in a clone that
-has a git remote named `origin`. This repo has no remote yet, so the clone URL is unset (`<REPO_URL>`): create the GitHub repo,
-add the remote, and rebuild with `python scripts/build_notebook.py`.
+so **Run all** never clones twice or nests folders. The clone URL comes from the `origin` remote at build time, so
+the pushed repo must contain the notebook built **after** the remote existed: run `python scripts/build_notebook.py`, then
+commit and push the notebook before opening it in Colab. A notebook uploaded without that cell fails at Step 2 with
+`FileNotFoundError: /content/configs/ablation.yaml`, because Colab starts with only the notebook file. If the repo is private
+or unpushed, the builder instead writes an upload-a-zip bootstrap cell: zip the repo folder (without `.venv`), upload the zip
+to `/content`, and run that cell.
 
 Do not add your own `!git clone` / `%cd` cell: an unguarded one clones again on every Run all and descends one folder deeper
 each time. If that already happened, use **Runtime → Disconnect and delete runtime**, then reconnect and Run all.

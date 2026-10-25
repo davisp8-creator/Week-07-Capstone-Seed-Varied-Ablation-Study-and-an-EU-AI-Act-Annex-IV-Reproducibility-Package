@@ -116,6 +116,9 @@ def deep_merge(base, over):
     return out
 
 
+if not (ROOT / "configs" / "ablation.yaml").exists():
+    raise FileNotFoundError(f"{ROOT / 'configs' / 'ablation.yaml'} not found. The working directory must be the repo root "
+                            "(on Colab: run the Colab Bootstrap cell first, or see COLAB.md).")
 CFG = yaml.safe_load((ROOT / "configs" / "ablation.yaml").read_text(encoding="utf-8-sig"))
 CFG = deep_merge({k: v for k, v in CFG.items() if k != "quick"}, CFG["quick"]) if QUICK else \
     {k: v for k, v in CFG.items() if k != "quick"}
